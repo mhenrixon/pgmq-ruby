@@ -9,7 +9,7 @@ SimpleCov.start do
   add_filter "/examples/"
   add_filter "/vendor/"
 
-  minimum_coverage 96.5 if ENV["CI"]
+  minimum_coverage 96.5
 end
 
 require "minitest/autorun"

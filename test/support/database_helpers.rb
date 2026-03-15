@@ -79,6 +79,22 @@ module DatabaseHelpers
   alias_method :pgmq_supports_set_vt_timestamp?, :pgmq_supports_v1_11_features?
   alias_method :pgmq_supports_topic_routing?, :pgmq_supports_v1_11_features?
 
+  # Standard before block: creates a test client with a single queue
+  def setup_client_and_queue(suffix = nil)
+    @client = create_test_client
+    @queue_name = unique_queue_name(suffix)
+    ensure_test_queue(@client, @queue_name)
+  end
+
+  # Standard after block: drops the queue and closes the client
+  def teardown_client_and_queue
+    @client.drop_queue(@queue_name)
+  rescue
+    nil
+  ensure
+    @client.close
+  end
+
   # Ensures test database and extension exist
   def setup_test_database
     # Try to create extension if database exists

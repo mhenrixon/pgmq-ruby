@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Client do
   before { @client = PGMQ::Client.new(TEST_DB_PARAMS) }
 

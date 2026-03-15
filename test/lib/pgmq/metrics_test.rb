@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Metrics do
   before do
     @row = {

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Connection do
   before { @conn_params = TEST_DB_PARAMS }
 

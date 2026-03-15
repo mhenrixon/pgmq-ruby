@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Transaction do
   context "with mocked connections" do
     before do

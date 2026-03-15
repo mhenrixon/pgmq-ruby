@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Client::MultiQueue do
   before do
-    @client = PGMQ::Client.new(TEST_DB_PARAMS)
+    @client = create_test_client
     @queue1 = unique_queue_name("multi1")
     @queue2 = unique_queue_name("multi2")
     @queue3 = unique_queue_name("multi3")
@@ -19,6 +17,7 @@ describe PGMQ::Client::MultiQueue do
     rescue
       nil
     end
+    @client.close
   end
 
   describe "single connection, single query" do

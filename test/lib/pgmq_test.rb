@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ do
   describe ".new" do
     it "creates a client via the convenience method with hash params" do

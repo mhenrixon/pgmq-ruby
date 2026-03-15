@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe "PGMQ::VERSION" do
   it "has a version number" do
     refute_nil PGMQ::VERSION

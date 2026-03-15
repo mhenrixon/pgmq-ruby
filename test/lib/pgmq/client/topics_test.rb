@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Client::Topics do
   before do
     @client = create_test_client
@@ -14,16 +12,11 @@ describe PGMQ::Client::Topics do
 
   after do
     begin
-      @client.drop_queue(@queue_name)
-    rescue
-      nil
-    end
-    begin
       @client.drop_queue(@queue2)
     rescue
       nil
     end
-    @client.close
+    teardown_client_and_queue
   end
 
   describe "#bind_topic" do

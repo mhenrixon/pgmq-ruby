@@ -1,21 +1,12 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Client::QueueManagement do
   before do
     @client = create_test_client
     @queue_name = unique_queue_name
   end
 
-  after do
-    begin
-      @client.drop_queue(@queue_name)
-    rescue
-      nil
-    end
-    @client.close
-  end
+  after { teardown_client_and_queue }
 
   describe "#create" do
     it "creates a new queue and returns true" do

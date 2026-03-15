@@ -1,22 +1,8 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe PGMQ::Client::Metrics do
-  before do
-    @client = create_test_client
-    @queue_name = unique_queue_name
-    ensure_test_queue(@client, @queue_name)
-  end
-
-  after do
-    begin
-      @client.drop_queue(@queue_name)
-    rescue
-      nil
-    end
-    @client.close
-  end
+  before { setup_client_and_queue }
+  after { teardown_client_and_queue }
 
   describe "#metrics" do
     it "returns queue metrics" do

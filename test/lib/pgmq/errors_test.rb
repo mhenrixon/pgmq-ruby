@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "test_helper"
-
 describe "PGMQ::Errors" do
   describe "error hierarchy" do
     it "has BaseError inheriting from StandardError" do

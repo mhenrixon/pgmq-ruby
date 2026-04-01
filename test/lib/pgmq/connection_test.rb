@@ -195,6 +195,31 @@ describe PGMQ::Connection do
     end
   end
 
+  describe "shared connection detection" do
+    it "raises ConfigurationError when callable returns same connection to multiple slots" do
+      shared_conn = PG.connect(TEST_DB_PARAMS)
+      connection = PGMQ::Connection.new(-> { shared_conn }, pool_size: 2)
+
+      # Force pool to create two slots from different threads
+      errors = []
+      threads = 2.times.map do
+        Thread.new do
+          connection.with_connection { |c| c.exec("SELECT 1") }
+        rescue PGMQ::Errors::ConfigurationError => e
+          errors << e
+        rescue => e
+          # Connection errors from corrupted state are also possible
+        end
+      end
+      threads.each(&:join)
+
+      assert errors.any?, "Expected ConfigurationError for shared connection"
+      assert_match(/same PG::Connection object/, errors.first.message)
+    ensure
+      shared_conn&.close rescue nil
+    end
+  end
+
   describe "connection lifecycle" do
     it "closes all connections properly" do
       client = PGMQ::Client.new(@conn_params, pool_size: 3)

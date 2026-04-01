@@ -17,7 +17,7 @@ task default: :test
 namespace :examples do
   desc "Run all examples (validates gem functionality)"
   task :run do
-    exec("bin/integrations")
+    exec(File.expand_path("bin/integrations", __dir__))
   end
 
   desc "Run a specific example by name (e.g., rake examples:run_one[basic_produce_consume])"
@@ -31,7 +31,7 @@ namespace :examples do
       exit(1)
     end
 
-    exec("bin/integrations", matches.first)
+    exec(File.expand_path("bin/integrations", __dir__), matches.first)
   end
 
   desc "List all available examples"

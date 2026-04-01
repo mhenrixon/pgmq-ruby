@@ -202,22 +202,24 @@ describe PGMQ::Connection do
 
       # Deterministically force pool to create two slots using the same PG::Connection
       errors = []
-      ready = false
+      ready_queue = Queue.new
 
       # Hold one connection in a background thread to occupy the first slot
       holder_thread = Thread.new do
         connection.with_connection do |_c|
-          ready = true
+          ready_queue << :acquired
           sleep 0.5
         end
       rescue PGMQ::Errors::ConfigurationError => e
         errors << e
+        ready_queue << :error
       rescue
         # Connection errors from corrupted state are also possible
+        ready_queue << :error
       end
 
-      # Wait until the first slot is definitely acquired
-      sleep(0.01) until ready
+      # Wait until the first slot is definitely acquired or an error occurs
+      ready_queue.pop
 
       # Now, from the main thread, force creation of the second slot
       begin

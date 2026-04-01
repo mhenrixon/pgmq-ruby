@@ -52,6 +52,12 @@ ExampleHelper.run_example("Shared Connection Thread Safety") do |_client, queues
     rescue
       nil
     end
+
+    begin
+      raw_conn.finish
+    rescue
+      nil
+    end
   end
 
   break if interrupted.call

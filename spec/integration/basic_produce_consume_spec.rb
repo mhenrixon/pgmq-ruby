@@ -8,9 +8,6 @@
 # 3. Read the message with visibility timeout
 # 4. Delete the message after processing
 #
-# Run: bundle exec ruby spec/integration/basic_produce_consume_spec.rb
-
-require_relative "support/example_helper"
 
 ExampleHelper.run_example("Basic Produce/Consume") do |client, queues, _interrupted|
   queue = ExampleHelper.unique_queue_name("basic")

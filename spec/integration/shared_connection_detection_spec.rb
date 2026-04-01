@@ -6,9 +6,6 @@
 # same PG::Connection to multiple pool slots. This is a deterministic test:
 # hold one connection, then force a second slot creation from another thread.
 #
-# Run: bundle exec ruby spec/integration/shared_connection_detection_spec.rb
-
-require_relative "support/example_helper"
 
 ExampleHelper.run_example("Shared Connection Detection") do |_client, _queues, _interrupted|
   shared_conn = PG.connect(ExampleHelper::DB_PARAMS)
@@ -19,7 +16,7 @@ ExampleHelper.run_example("Shared Connection Detection") do |_client, _queues, _
   error = nil
 
   # Hold the first pool slot, forcing the pool to create a second one
-  unsafe_client.instance_variable_get(:@connection).with_connection do |_held|
+  unsafe_client.connection.with_connection do |_held|
     thread = Thread.new do
       unsafe_client.list_queues
     rescue PGMQ::Errors::ConfigurationError => e
@@ -37,7 +34,7 @@ ExampleHelper.run_example("Shared Connection Detection") do |_client, _queues, _
   safe_client = ExampleHelper.create_client(pool_size: 2)
   results = []
 
-  safe_client.instance_variable_get(:@connection).with_connection do |_held|
+  safe_client.connection.with_connection do |_held|
     thread = Thread.new do
       results << safe_client.list_queues
     end
@@ -50,6 +47,12 @@ ExampleHelper.run_example("Shared Connection Detection") do |_client, _queues, _
 
   safe_client.close
 ensure
+  begin
+    unsafe_client&.close
+  rescue
+    nil
+  end
+
   begin
     shared_conn&.close
   rescue

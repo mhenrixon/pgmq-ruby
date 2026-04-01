@@ -200,22 +200,47 @@ describe PGMQ::Connection do
       shared_conn = PG.connect(TEST_DB_PARAMS)
       connection = PGMQ::Connection.new(-> { shared_conn }, pool_size: 2)
 
-      # Force pool to create two slots from different threads
+      # Deterministically force pool to create two slots using the same PG::Connection
       errors = []
-      threads = 2.times.map do
-        Thread.new do
-          connection.with_connection { |c| c.exec("SELECT 1") }
-        rescue PGMQ::Errors::ConfigurationError => e
-          errors << e
-        rescue
-          # Connection errors from corrupted state are also possible
+      ready_queue = Queue.new
+
+      # Hold one connection in a background thread to occupy the first slot
+      holder_thread = Thread.new do
+        connection.with_connection do |_c|
+          ready_queue << :acquired
+          sleep 0.5
         end
+      rescue PGMQ::Errors::ConfigurationError => e
+        errors << e
+        ready_queue << :error
+      rescue
+        # Connection errors from corrupted state are also possible
+        ready_queue << :error
       end
-      threads.each(&:join)
+
+      # Wait until the first slot is definitely acquired or an error occurs
+      ready_queue.pop
+
+      # Now, from the main thread, force creation of the second slot
+      begin
+        connection.with_connection { |c| c.exec("SELECT 1") }
+      rescue PGMQ::Errors::ConfigurationError => e
+        errors << e
+      rescue
+        # Connection errors from corrupted state are also possible
+      end
+
+      holder_thread.join
 
       assert_predicate errors, :any?, "Expected ConfigurationError for shared connection"
       assert_match(/same PG::Connection object/, errors.first.message)
     ensure
+      begin
+        connection&.close
+      rescue
+        nil
+      end
+
       begin
         shared_conn&.close
       rescue

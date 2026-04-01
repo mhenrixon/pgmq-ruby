@@ -6,9 +6,6 @@
 # - set_vt: Extend visibility timeout for a message
 # - Heartbeat pattern: Periodically extend VT during long processing
 #
-# Run: bundle exec ruby spec/integration/visibility_timeout_spec.rb
-
-require_relative "support/example_helper"
 
 ExampleHelper.run_example("Visibility Timeout Management") do |client, queues, interrupted|
   queue = ExampleHelper.unique_queue_name("vt")

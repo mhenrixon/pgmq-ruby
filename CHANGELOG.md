@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 (Unreleased)
+## 0.6.0 (2026-04-02)
 
 ### Breaking Changes
 - **[Breaking]** Drop Ruby 3.2 support. Minimum required Ruby version is now 3.3.0.

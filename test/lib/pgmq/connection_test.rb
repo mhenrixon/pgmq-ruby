@@ -337,7 +337,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_patterns: ["Connection Reset By Peer"]
+        reconnectable_error_patterns: ["Connection Reset By Peer"]
       )
 
       error = PG::Error.new("recv() failed: connection reset by peer")
@@ -351,7 +351,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_patterns: [/\Abroken pipe\b/i]
+        reconnectable_error_patterns: [/\Abroken pipe\b/i]
       )
 
       error = PG::Error.new("Broken pipe while writing to server")
@@ -365,7 +365,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_patterns: ["broken pipe"]
+        reconnectable_error_patterns: ["broken pipe"]
       )
 
       error = PG::Error.new("duplicate key value violates unique constraint")
@@ -380,7 +380,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_classes: [stub_class]
+        reconnectable_error_classes: [stub_class]
       )
 
       error = stub_class.new("anything")
@@ -396,7 +396,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_classes: [stub_class]
+        reconnectable_error_classes: [stub_class]
       )
 
       error = child_class.new("anything")
@@ -410,7 +410,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_patterns: "broken pipe"
+        reconnectable_error_patterns: "broken pipe"
       )
 
       error = PG::Error.new("broken pipe")
@@ -425,7 +425,7 @@ describe PGMQ::Connection do
         PGMQ::Connection.new(
           TEST_DB_PARAMS,
           pool_size: 1,
-          connection_error_patterns: [123]
+          reconnectable_error_patterns: [123]
         )
       end
     end
@@ -435,7 +435,7 @@ describe PGMQ::Connection do
         PGMQ::Connection.new(
           TEST_DB_PARAMS,
           pool_size: 1,
-          connection_error_classes: [String]
+          reconnectable_error_classes: [String]
         )
       end
     end
@@ -445,7 +445,7 @@ describe PGMQ::Connection do
         PGMQ::Connection.new(
           TEST_DB_PARAMS,
           pool_size: 1,
-          connection_error_classes: ["PG::Error"]
+          reconnectable_error_classes: ["PG::Error"]
         )
       end
     end
@@ -455,8 +455,8 @@ describe PGMQ::Connection do
       client = PGMQ::Client.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_patterns: [/custom-pooler-disconnect/i],
-        connection_error_classes: [stub_class]
+        reconnectable_error_patterns: [/custom-pooler-disconnect/i],
+        reconnectable_error_classes: [stub_class]
       )
 
       conn = client.connection
@@ -473,7 +473,7 @@ describe PGMQ::Connection do
       custom = PGMQ::Connection.new(
         TEST_DB_PARAMS,
         pool_size: 1,
-        connection_error_patterns: ["pretend-pooler-eof"]
+        reconnectable_error_patterns: ["pretend-pooler-eof"]
       )
 
       attempts = 0

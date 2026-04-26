@@ -35,21 +35,25 @@ module PGMQ
     # @param pool_size [Integer] size of the connection pool
     # @param pool_timeout [Integer] connection pool timeout in seconds
     # @param auto_reconnect [Boolean] automatically reconnect on connection errors
-    # @param connection_error_patterns [Array<String, Regexp>] additional error
-    #   message patterns that should be treated as a lost connection. Strings
-    #   are matched as case-insensitive substrings; Regexps are matched
-    #   directly against the original error message. Defaults are always kept.
-    # @param connection_error_classes [Array<Class>] additional exception
-    #   classes whose instances should be treated as a lost connection.
-    #   `PG::ConnectionBad` and `PG::UnableToSend` are always matched.
+    # @param reconnectable_error_patterns [Array<String, Regexp>] additional error
+    #   message patterns that mean the connection itself is dead and a retry on
+    #   a fresh connection is safe (e.g. socket-layer EOFs, pooler teardowns).
+    #   Strings are matched as case-insensitive substrings; Regexps are matched
+    #   against the original error message. Defaults are always kept. Do NOT
+    #   add patterns for query-level errors (deadlocks, constraint violations,
+    #   timeouts) — those are not safe to blindly retry on a new connection.
+    # @param reconnectable_error_classes [Array<Class>] additional exception
+    #   classes that mean the connection itself is dead. `PG::ConnectionBad`
+    #   and `PG::UnableToSend` are always matched. Same caveat as above:
+    #   reserve this for connection-level failures, not query-level ones.
     # @raise [PGMQ::Errors::ConfigurationError] if conn_params is nil or invalid
     def initialize(
       conn_params,
       pool_size: DEFAULT_POOL_SIZE,
       pool_timeout: DEFAULT_POOL_TIMEOUT,
       auto_reconnect: true,
-      connection_error_patterns: [],
-      connection_error_classes: []
+      reconnectable_error_patterns: [],
+      reconnectable_error_classes: []
     )
       if conn_params.nil?
         raise(
@@ -62,8 +66,8 @@ module PGMQ
       @pool_size = pool_size
       @pool_timeout = pool_timeout
       @auto_reconnect = auto_reconnect
-      @extra_patterns = normalize_patterns(connection_error_patterns)
-      @extra_classes = normalize_classes(connection_error_classes)
+      @extra_patterns = normalize_patterns(reconnectable_error_patterns)
+      @extra_classes = normalize_classes(reconnectable_error_classes)
       @pool = create_pool
     end
 
@@ -186,13 +190,13 @@ module PGMQ
         else
           raise(
             PGMQ::Errors::ConfigurationError,
-            "connection_error_patterns must contain Strings or Regexps, got #{pattern.class}"
+            "reconnectable_error_patterns must contain Strings or Regexps, got #{pattern.class}"
           )
         end
       end.freeze
     end
 
-    # Normalizes user-supplied connection error classes.
+    # Normalizes user-supplied error classes that signal a dead connection.
     #
     # @param classes [Array<Class>, Class, nil]
     # @return [Array<Class>]
@@ -201,7 +205,7 @@ module PGMQ
         unless klass.is_a?(Class) && klass <= Exception
           raise(
             PGMQ::Errors::ConfigurationError,
-            "connection_error_classes must contain Exception subclasses, got #{klass.inspect}"
+            "reconnectable_error_classes must contain Exception subclasses, got #{klass.inspect}"
           )
         end
 

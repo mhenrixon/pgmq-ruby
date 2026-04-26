@@ -304,12 +304,12 @@ client = PGMQ::Client.new(
   'postgres://localhost/mydb',
   # Strings are matched as case-insensitive substrings against the error
   # message; Regexps are matched against the original message.
-  connection_error_patterns: [
+  reconnectable_error_patterns: [
     "connection reset by peer",
     /\Abroken pipe\b/i
   ],
   # Any Exception subclass is accepted. Subclasses also match.
-  connection_error_classes: [PG::ConnectionRefused]
+  reconnectable_error_classes: [PG::ConnectionRefused]
 )
 ```
 
@@ -317,6 +317,13 @@ The built-in defaults are always kept — your patterns and classes are
 appended to them. Configuration errors (e.g. passing an Integer as a
 pattern) raise `PGMQ::Errors::ConfigurationError` immediately at
 construction time so misconfiguration can't silently disable retries.
+
+> **Reserve these options for connection-level failures.** A "reconnectable"
+> error means the socket is dead and a retry on a fresh connection is safe.
+> Do **not** add patterns or classes for query-level errors (deadlocks,
+> constraint violations, statement timeouts) — those will replay your
+> operation against a healthy connection and may cause duplicate work or
+> mask bugs.
 
 **Connection Pool Benefits:**
 - **Thread-safe** - Multiple threads can safely share a single client

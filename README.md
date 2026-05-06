@@ -297,26 +297,25 @@ PGMQ-Ruby ships with a curated list of `PG::Error` messages and classes
 retry. Different `pg` gem versions, PostgreSQL versions, and connection
 poolers (PgBouncer, Supabase, RDS Proxy, etc.) occasionally surface new
 disconnect signatures. Rather than wait for an upstream patch, you can
-extend the matchers at the call site:
+extend the matchers at boot time via class-level configuration:
 
 ```ruby
-client = PGMQ::Client.new(
-  'postgres://localhost/mydb',
-  # Strings are matched as case-insensitive substrings against the error
-  # message; Regexps are matched against the original message.
-  reconnectable_error_patterns: [
-    "connection reset by peer",
-    /\Abroken pipe\b/i
-  ],
-  # Any Exception subclass is accepted. Subclasses also match.
-  reconnectable_error_classes: [PG::ConnectionRefused]
-)
+# In an initializer (e.g. config/initializers/pgmq.rb for Rails apps)
+# Strings are matched as case-insensitive substrings against the error
+# message; Regexps are matched against the original message.
+PGMQ::Connection.reconnectable_error_patterns = [
+  "connection reset by peer",
+  /\Abroken pipe\b/i
+]
+
+# Any Exception subclass is accepted. Subclasses also match.
+PGMQ::Connection.reconnectable_error_classes = [PG::ConnectionRefused]
 ```
 
 The built-in defaults are always kept — your patterns and classes are
 appended to them. Configuration errors (e.g. passing an Integer as a
-pattern) raise `PGMQ::Errors::ConfigurationError` immediately at
-construction time so misconfiguration can't silently disable retries.
+pattern) raise `PGMQ::Errors::ConfigurationError` immediately so
+misconfiguration can't silently disable retries.
 
 > **Reserve these options for connection-level failures.** A "reconnectable"
 > error means the socket is dead and a retry on a fresh connection is safe.

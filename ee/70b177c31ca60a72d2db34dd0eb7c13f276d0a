@@ -1,0 +1,23 @@
+Gemfile.lock
+  ai_agent 5,16
+pgmq-ruby.gemspec
+  s_58ef037f34fea6::t_08541f8558668a 29
+CHANGELOG.md
+  s_58ef037f34fea6::t_8f21caa4ee4ca4 3-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "ee70b177c31ca60a72d2db34dd0eb7c13f276d0a",
+  "prompts": {},
+  "sessions": {
+    "s_58ef037f34fea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f69267f6-1c27-4126-99de-f6614d22968b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "mhenrixon <mikael@mhenrixon.com>"
+    }
+  }
+}
